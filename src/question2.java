@@ -1,6 +1,6 @@
 abstract class BankAccount {
-    String accountNumber;
-    double balance;
+    private String accountNumber;
+    protected double balance;
 
     public BankAccount(String accountNumber, double balance) {
         this.accountNumber = accountNumber;
@@ -9,80 +9,91 @@ abstract class BankAccount {
 
     public void deposit(double amount) {
         balance += amount;
+        System.out.println("Deposited " + amount + ". New balance: " + balance);
     }
 
     public abstract boolean withdraw(double amount);
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public String getAccountNumber() {
+        return accountNumber;
+    }
 }
 
-interface Transaction {
-    boolean transfer(BankAccount toAccount, double amount);
+interface Transferable {
+    boolean transferTo(BankAccount recipient, double amount);
 }
 
-class SavingsAccount extends BankAccount implements Transaction {
+class SavingsAccount extends BankAccount implements Transferable {
+    private static final double MINIMUM_BALANCE = 500;
+
     public SavingsAccount(String accountNumber, double balance) {
         super(accountNumber, balance);
     }
 
+    @Override
     public boolean withdraw(double amount) {
-        if (balance - amount >= 500) {
+        if (balance - amount >= MINIMUM_BALANCE) {
             balance -= amount;
+            System.out.println("Withdrawal of " + amount + " successful. New balance: " + balance);
             return true;
         }
+        System.out.println("Withdrawal failed. Minimum balance of " + MINIMUM_BALANCE + " required.");
         return false;
     }
 
-    public boolean transfer(BankAccount toAccount, double amount) {
+    @Override
+    public boolean transferTo(BankAccount recipient, double amount) {
         if (withdraw(amount)) {
-            toAccount.deposit(amount);
+            recipient.deposit(amount);
+            System.out.println("Transfer of " + amount + " successful. Savings balance: " + balance + ", Recipient balance: " + recipient.getBalance());
             return true;
         }
         return false;
     }
 }
 
-class CurrentAccount extends BankAccount implements Transaction {
-    private static final double OVERDRAFT_LIMIT = 5000;
+class CurrentAccount extends BankAccount implements Transferable {
+    private static final double OVERDRAFT_LIMIT = -5000;
 
     public CurrentAccount(String accountNumber, double balance) {
         super(accountNumber, balance);
     }
 
+    @Override
     public boolean withdraw(double amount) {
-        if (balance - amount >= -OVERDRAFT_LIMIT) {
+        if (balance - amount >= OVERDRAFT_LIMIT) {
             balance -= amount;
+            System.out.println("Withdrawal of " + amount + " successful. New balance: " + balance);
             return true;
         }
+        System.out.println("Withdrawal failed. Overdraft limit exceeded.");
         return false;
     }
 
-    public boolean transfer(BankAccount toAccount, double amount) {
+    @Override
+    public boolean transferTo(BankAccount recipient, double amount) {
         if (withdraw(amount)) {
-            toAccount.deposit(amount);
+            recipient.deposit(amount);
+            System.out.println("Transfer of " + amount + " successful. Current account balance: " + balance + ", Recipient balance: " + recipient.getBalance());
             return true;
         }
         return false;
     }
 }
-class question2 {
+
+public class question2 {
     public static void main(String[] args) {
-        SavingsAccount savings = new SavingsAccount("SA123", 1000);
-        CurrentAccount current = new CurrentAccount("CA456", 2000);
+        SavingsAccount savings = new SavingsAccount("SAV123", 5000);
+        CurrentAccount current = new CurrentAccount("CUR456", 2000);
 
-        System.out.println("Initial Balances:");
-        System.out.println("Savings: " + savings.balance);
-        System.out.println("Current: " + current.balance);
+        savings.deposit(1000);
+        current.withdraw(3000);
 
-        savings.deposit(500);
-        current.withdraw(300);
-
-        System.out.println("Balances after transactions:");
-        System.out.println("Savings: " + savings.balance);
-        System.out.println("Current: " + current.balance);
-
-        savings.transfer(current, 200);
-
-        System.out.println("Balances after transfer:");
-        System.out.println("Savings: " + savings.balance);
-        System.out.println("Current: " + current.balance);
+        savings.transferTo(current, 1500);
+        current.transferTo(savings, 6000);
     }
 }
