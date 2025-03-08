@@ -6,7 +6,6 @@ class Employee {
     String fullName;
     int pointLevel;
     Category assignedCategory;
-
     public Employee(String fullName, int pointLevel, Category assignedCategory) {
         this.fullName = fullName;
         this.pointLevel = pointLevel;
@@ -19,8 +18,8 @@ class Ticket {
     String name;
     Category category;
     int point;
-    String assignedEmployee = "";
-    boolean isCompleted = false;
+    String assignedEmployee="";
+    boolean isCompleted=false;
 
     public Ticket(int id, String name, Category category, int point) {
         this.id = id;
@@ -31,45 +30,67 @@ class Ticket {
 }
 
 class HelpDesk {
-    Employee[] employees = new Employee[2];
+    Employee emp1, emp2;
     Ticket[] tickets = new Ticket[5];
 
-    public void addEmployee(Employee e, int pos) {
-        if (pos >= 1 && pos <= 2) employees[pos - 1] = e;
+    void addEmployee(Employee e, int pos) {
+        if (pos == 1) {
+            emp1 = e;
+        }
+        else{
+            emp2 = e;
+        }
+
     }
 
-    public void addTicket(Ticket t, int pos) {
-        if (pos >= 1 && pos <= 5) tickets[pos - 1] = t;
+    void addTicket(Ticket t, int pos) {
+        if (pos >= 1 && pos <= 5) {
+            tickets[pos - 1] = t;
+        }
     }
 
-    public void completeTicket(String employeeName, int ticketId) {
-        for (Employee emp : employees) {
-            if (emp != null && emp.fullName.equals(employeeName)) {
-                for (Ticket ticket : tickets) {
-                    if (ticket != null && ticket.id == ticketId && !ticket.isCompleted) {
-                        if (emp.pointLevel >= ticket.point) {
-                            ticket.isCompleted = true;
-                            ticket.assignedEmployee = employeeName;
-                            System.out.println("Ticket " + ticketId + " marked as completed by " + employeeName);
-                        } else {
-                            System.out.println("Ticket " + ticketId + " cannot be completed by " + employeeName + " (Insufficient points).");
-                        }
-                        return;
-                    }
+    void completeTicket(String employeeName, int ticketId) {
+        Employee emp = null;
+
+        if (emp1 != null && emp1.fullName.equals(employeeName)) {
+            emp = emp1;
+        } else if (emp2 != null && emp2.fullName.equals(employeeName)) {
+            emp = emp2;
+        }
+
+
+        if (emp == null) return;
+
+        for (Ticket t : tickets) {
+            if (t != null && t.id == ticketId && !t.isCompleted) {
+                if (emp.pointLevel >= t.point) {
+                    t.isCompleted = true;
+                    t.assignedEmployee = emp.fullName;
+                    System.out.println("Ticket " + t.id + " marked as completed by " + emp.fullName + ".");
+                } else {
+                    System.out.println("Ticket " + t.id + " cannot be completed by " + emp.fullName + " (Insufficient points).");
                 }
+                return;
             }
         }
     }
 
-    public int getWaitingTicketCount() {
+    int getWaitingTicketCount() {
         int count = 0;
-        for (Ticket ticket : tickets) if (ticket != null && !ticket.isCompleted) count++;
+        for (Ticket t : tickets) {
+            if (t != null && !t.isCompleted)
+            {
+                count++;
+            }
+        }
         return count;
     }
 
-    public int getCompletedTicketsTotalPoint() {
-        int totalPoints = 0;
-        for (Ticket ticket : tickets) if (ticket != null && ticket.isCompleted) totalPoints += ticket.point;
-        return totalPoints;
+    int getCompletedTicketsTotalPoint() {
+        int sum = 0;
+        for (Ticket t : tickets) {
+            if (t != null && t.isCompleted) sum += t.point;
+        }
+        return sum;
     }
 }
